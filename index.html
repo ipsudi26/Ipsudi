@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>IPSUDI — Índice de Privação Social de Uberlândia</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --ink:#232821;
+    --muted:#6b6b58;
+    --paper:#eee9db;
+    --card:#f8f6ee;
+    --line:#d9d3c1;
+    --link:#3f6e73;
+    --muito-baixo:#1f6e3f;
+    --baixo:#7cb342;
+    --medio:#e8c93f;
+    --alto:#e8842e;
+    --muito-alto:#c94c3f;
+    --serif:'Source Serif 4','Georgia',serif;
+    --sans:'Inter',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;}
+  a{color:var(--link);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  header{border-bottom:1px solid var(--line);}
+  .topbar{max-width:1100px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;padding:20px 40px;flex-wrap:wrap;gap:16px;}
+  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .brand .logo{font-family:var(--serif);font-size:22px;font-weight:700;}
+  .brand .sub{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;}
+  nav{display:flex;gap:26px;}
+  nav button{
+    font-family:var(--sans);font-size:14px;font-weight:600;color:var(--muted);
+    background:none;border:none;padding:4px 0;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  nav button.active{color:var(--ink);border-bottom:2px solid var(--ink);}
+  nav button:hover{color:var(--ink);}
+
+  main{max-width:1100px;margin:0 auto;padding:40px 40px 30px;}
+
+  /* Hero fixo, igual em todas as abas */
+  .hero h1{font-family:var(--serif);font-size:34px;line-height:1.2;margin:0 0 12px;max-width:640px;font-weight:700;}
+  .hero p.lead{font-size:15px;color:var(--muted);max-width:620px;margin:0 0 22px;}
+  .legend-pills{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .legend-pills span{font-family:var(--mono);font-size:11px;color:#fff;padding:7px 14px;border-radius:4px;}
+  .scale-caption{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 30px;}
+  .hero-divider{border:none;border-top:1px solid var(--line);margin:0 0 34px;}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  h2.section-title{font-family:var(--serif);font-size:24px;margin:0 0 8px;font-weight:700;}
+  p.section-sub{font-size:14px;color:var(--muted);margin:0 0 28px;max-width:640px;}
+
+  /* Apresentação */
+  .apresent-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:34px;}
+  .apresent-grid h3{font-family:var(--serif);font-size:18px;margin:26px 0 10px;}
+  .apresent-grid p{font-size:14.5px;color:#3a3a30;margin:0 0 14px;}
+  .tag-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .tag-row span{background:#e3e0d2;color:var(--ink);font-size:12.5px;padding:6px 12px;border-radius:5px;}
+  .ficha{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px 22px;}
+  .ficha h3{font-family:var(--serif);font-size:17px;margin:0 0 16px;}
+  .ficha .row{margin-bottom:14px;}
+  .ficha .row:last-child{margin-bottom:0;}
+  .ficha .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+  .ficha .val{font-size:13.5px;color:var(--ink);}
+
+  /* Equipe */
+  .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .team-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px;}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--muito-baixo);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:700;font-size:14px;margin-bottom:14px;}
+  .team-card h3{font-family:var(--serif);font-size:16px;margin:0 0 3px;}
+  .team-card .role{font-size:13px;color:var(--muted);margin:0 0 6px;}
+  .team-card .inst{font-size:13px;color:var(--link);font-weight:600;}
+  .team-card.add{border-style:dashed;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
+
+  /* Dados espaciais */
+  .dados-grid{display:grid;grid-template-columns:260px 1fr;gap:22px;}
+  .layers-box{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;align-self:start;}
+  .layers-box .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .layer-item{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:10px;}
+  .layer-item input{accent-color:var(--muito-baixo);}
+  .layers-sep{border:none;border-top:1px dashed var(--line);margin:16px 0;}
+  .layers-box p{font-size:12.5px;color:var(--muted);margin:0 0 14px;}
+  .drive-btn{display:inline-block;background:var(--muito-baixo);color:#fff;font-size:13px;font-weight:600;padding:9px 14px;border-radius:5px;border:none;cursor:pointer;}
+  .drive-btn:hover{background:#175530;text-decoration:none;}
+  .map-box{border:1px solid var(--line);border-radius:6px;height:460px;overflow:hidden;background:#e9e6da;}
+  #map{height:100%;width:100%;}
+
+  /* Documentos */
+  .doc-group{margin-bottom:30px;}
+  .doc-group .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .doc-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:10px;}
+  .doc-card.dim{opacity:.6;}
+  .doc-card h4{font-family:var(--serif);font-size:15.5px;margin:0 0 4px;}
+  .doc-card .sub{font-size:12.5px;color:var(--muted);}
+  .doc-card .action{font-size:13px;font-weight:600;color:var(--link);white-space:nowrap;}
+
+  footer{border-top:1px solid var(--line);max-width:1100px;margin:20px auto 0;padding:22px 40px 40px;display:flex;gap:14px;align-items:flex-start;}
+  .cnpq-box{width:52px;height:34px;border:1px dashed var(--muted);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--muted);flex-shrink:0;}
+  footer p{font-size:12.5px;color:var(--muted);margin:0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo">IPSUDI</span>
+      <span class="sub">Índice de Privação Social · Uberlândia</span>
+    </div>
+    <nav>
+      <button class="tab active" data-p="apresentacao">Apresentação</button>
+      <button class="tab" data-p="equipe">Equipe</button>
+      <button class="tab" data-p="dados">Dados espaciais</button>
+      <button class="tab" data-p="documentos">Documentos</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <h1>A pobreza urbana de Uberlândia, mapeada setor por setor</h1>
+    <p class="lead">Um modelo multicritério aplicado aos 1.829 setores censitários da área urbana, a partir de 15 indicadores de renda, educação, demografia, entorno e domicílio do Censo IBGE 2022.</p>
+    <div class="legend-pills">
+      <span style="background:var(--muito-baixo)">Muito baixo</span>
+      <span style="background:var(--baixo)">Baixo</span>
+      <span style="background:var(--medio);color:#3a3320">Médio</span>
+      <span style="background:var(--alto)">Alto</span>
+      <span style="background:var(--muito-alto)">Muito alto</span>
+    </div>
+    <p class="scale-caption">escala do IPSUDI · 0 (sem privação) a 1 (privação máxima)</p>
+  </div>
+  <hr class="hero-divider">
+
+  <!-- APRESENTAÇÃO -->
+  <section class="panel active" id="apresentacao">
+    <div class="apresent-grid">
+      <div>
+        <h2 class="section-title">Sobre o índice</h2>
+        <p>O Índice de Privação Social de Uberlândia (IPSUDI) sintetiza múltiplas dimensões da pobreza urbana em um único indicador, calculado por setor censitário. Os indicadores foram padronizados por normalização linear, ponderados com Análise Hierárquica de Processo (AHP) e agregados por combinação linear ponderada.</p>
+        <p>Os resultados mostram bolsões de elevada privação social na zona periférica de Uberlândia, contrastando com áreas de baixa privação nas regiões central, sul e parte da região leste — um padrão espacialmente estruturado e socialmente determinado.</p>
+        <h3>Dimensões avaliadas</h3>
+        <div class="tag-row">
+          <span>Renda</span><span>Educação</span><span>Demografia</span><span>Entorno</span><span>Domicílio</span>
+        </div>
+      </div>
+      <div class="ficha">
+        <h3>Ficha do projeto</h3>
+        <div class="row"><div class="lbl">Título</div><div class="val">Índice de Privação Social (IPS): Avaliação Multicritério da Pobreza Urbana em Uberlândia, MG</div></div>
+        <div class="row"><div class="lbl">Execução</div><div class="val">Universidade Federal de Uberlândia (UFU)</div></div>
+        <div class="row"><div class="lbl">Financiamento</div><div class="val">CNPq — Chamada MCTI Nº 10/2023, Faixa A</div></div>
+        <div class="row"><div class="lbl">Vigência</div><div class="val">2024 – 2027</div></div>
+        <div class="row"><div class="lbl">Processo</div><div class="val">404743/2023-4</div></div>
+        <div class="row"><div class="lbl">Fonte de dados</div><div class="val">Censo Demográfico IBGE 2022</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EQUIPE -->
+  <section class="panel" id="equipe">
+    <h2 class="section-title">Equipe</h2>
+    <p class="section-sub">Pesquisadores responsáveis pela concepção, metodologia e execução do projeto.</p>
+
+    <div class="doc-group">
+      <div class="lbl">Docentes</div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar">RF</div>
+          <h3>Rivaldo Faria</h3>
+          <div class="role">Coordenação · Curadoria e análise de dados</div>
+          <div class="inst">UFU</div>
+        </div>
+        <div class="team-card">
+          <div class="avatar">LB</div>
+          <h3>Lígia Vizeu Barrozo</h3>
+          <div class="role">Metodologia · Supervisão</div>
+          <div class="inst">USP</div>
+        </div>
+        <div class="team-card">
+          <div class="avatar">JB</div>
+          <h3>João Vitor Meza Bravo</h3>
+          <div class="role">Docente</div>
+          <div class="inst">UFU</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-group">
+      <div class="lbl">Discentes</div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar">MS</div>
+          <h3>Mateus Duarte Segismundo</h3>
+          <div class="role">Doutorando em Geografia</div>
+          <div class="inst">UFU</div>
+        </div>
+        <div class="team-card add">+ adicionar colaborador</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DADOS ESPACIAIS -->
+  <section class="panel" id="dados">
+    <h2 class="section-title">Acesso aos dados espaciais</h2>
+    <p class="section-sub">Explore o IPSUDI e seus indicadores por setor censitário. Para os dados completos (shapefiles, tabelas), acesse a pasta compartilhada no Drive.</p>
+    <div class="dados-grid">
+      <div class="layers-box">
+        <div class="lbl">Camadas</div>
+        <div class="layer-item"><input type="checkbox" id="l1" checked><label for="l1">IPSUDI (índice final)</label></div>
+        <div class="layer-item"><input type="checkbox" id="l2"><label for="l2">Renda (RNMRD)</label></div>
+        <div class="layer-item"><input type="checkbox" id="l3"><label for="l3">Alfabetização</label></div>
+        <div class="layer-item"><input type="checkbox" id="l4"><label for="l4">Raça/cor</label></div>
+        <div class="layer-item"><input type="checkbox" id="l5"><label for="l5">Faixa etária</label></div>
+        <div class="layer-item"><input type="checkbox" id="l6"><label for="l6">Favelas e comunidades</label></div>
+        <div class="layer-item"><input type="checkbox" id="l7"><label for="l7">Vazios urbanos e outros usos</label></div>
+        <hr class="layers-sep">
+        <div class="lbl">Dados brutos</div>
+        <p>Planilhas e shapefiles completos, atualizados no Google Drive do projeto.</p>
+        <a class="drive-btn" href="#" target="_blank">Abrir pasta no Drive ↗</a>
+      </div>
+      <div class="map-box"><div id="map"></div></div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTOS -->
+  <section class="panel" id="documentos">
+    <h2 class="section-title">Documentos</h2>
+
+    <div class="doc-group">
+      <div class="lbl">Publicações</div>
+      <div class="doc-card">
+        <div>
+          <h4>A Pobreza Avaliada como Privação Social: Aplicação de Modelo Multicritério na Cidade de Uberlândia, MG</h4>
+          <div class="sub">Faria, R.; Barrozo, L. V. · Sociedade &amp; Natureza, v.38, 2026</div>
+        </div>
+        <a class="action" href="#">Baixar PDF ↗</a>
+      </div>
+    </div>
+
+    <div class="doc-group">
+      <div class="lbl">Relatórios técnicos</div>
+      <div class="doc-card dim">
+        <div>
+          <h4>Relatório parcial de execução — CNPq</h4>
+          <div class="sub">a publicar</div>
+        </div>
+        <span class="action">em breve</span>
+      </div>
+    </div>
+
+    <div class="doc-group">
+      <div class="lbl">Outros materiais</div>
+      <div class="doc-card dim">
+        <div>
+          <h4>Apresentações e pôsteres</h4>
+          <div class="sub">a publicar</div>
+        </div>
+        <span class="action">em breve</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="cnpq-box">CNPq</div>
+  <p>Projeto financiado pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq) — Chamada MCTI Nº 10/2023, Faixa A, Grupos Emergentes. Processo 404743/2023-4.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  document.querySelectorAll('nav .tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.p).classList.add('active');
+      if(btn.dataset.p === 'dados'){ initMap(); }
+    });
+  });
+
+  let mapInitialized = false;
+  function initMap(){
+    if(mapInitialized) return;
+    mapInitialized = true;
+    const map = L.map('map').setView([-18.9128, -48.2755], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap, &copy; CARTO',
+      maxZoom: 19
+    }).addTo(map);
+    setTimeout(()=> map.invalidateSize(), 200);
+
+    // ====== CONFIGURAÇÃO DA CAMADA IPSUDI ======
+    // Ajuste os dois valores abaixo para bater com o seu arquivo:
+    const IPSUDI_GEOJSON_PATH = 'data/ipsudi_setores.geojson'; // caminho do arquivo no repositório
+    const IPSUDI_FIELD = 'IPSUDI'; // nome exato da coluna com o valor do índice na tabela de atributos
+    // =============================================
+
+    function ipsudiColor(v){
+      if(v === null || v === undefined || isNaN(v)) return '#ccc';
+      if(v <= 0.243) return getComputedStyle(document.documentElement).getPropertyValue('--muito-baixo').trim();
+      if(v <= 0.348) return getComputedStyle(document.documentElement).getPropertyValue('--baixo').trim();
+      if(v <= 0.405) return getComputedStyle(document.documentElement).getPropertyValue('--medio').trim();
+      if(v <= 0.482) return getComputedStyle(document.documentElement).getPropertyValue('--alto').trim();
+      return getComputedStyle(document.documentElement).getPropertyValue('--muito-alto').trim();
+    }
+
+    let ipsudiLayer = null;
+    fetch(IPSUDI_GEOJSON_PATH)
+      .then(r => { if(!r.ok) throw new Error('arquivo não encontrado'); return r.json(); })
+      .then(data => {
+        ipsudiLayer = L.geoJSON(data, {
+          style: feature => ({
+            fillColor: ipsudiColor(feature.properties[IPSUDI_FIELD]),
+            weight: 0.5,
+            color: '#fff',
+            fillOpacity: 0.75
+          }),
+          onEachFeature: (feature, layer) => {
+            const v = feature.properties[IPSUDI_FIELD];
+            layer.bindPopup('IPSUDI: ' + (v !== undefined ? v : 'sem dado'));
+          }
+        });
+        if(document.getElementById('l1').checked){ ipsudiLayer.addTo(map); }
+      })
+      .catch(err => {
+        console.warn('Camada IPSUDI ainda não encontrada em ' + IPSUDI_GEOJSON_PATH + '. Suba o GeoJSON nessa pasta para ela aparecer aqui.', err);
+      });
+
+    document.getElementById('l1').addEventListener('change', e => {
+      if(!ipsudiLayer) return;
+      if(e.target.checked){ ipsudiLayer.addTo(map); } else { map.removeLayer(ipsudiLayer); }
+    });
+
+    // ====== CAMADA: VAZIOS URBANOS E OUTROS USOS ======
+    const VAZIOS_GEOJSON_PATH = 'data/vazios_urbanos_outros_usos.geojson';
+    let vaziosLayer = null;
+    fetch(VAZIOS_GEOJSON_PATH)
+      .then(r => { if(!r.ok) throw new Error('arquivo não encontrado'); return r.json(); })
+      .then(data => {
+        vaziosLayer = L.geoJSON(data, {
+          style: {
+            fillColor: '#b8b3a0',
+            fillOpacity: 0.55,
+            color: '#8f8a76',
+            weight: 1,
+            dashArray: '3,3'
+          },
+          onEachFeature: (feature, layer) => {
+            const uso = feature.properties.UsoSolo || 'não informado';
+            layer.bindPopup('Uso do solo: ' + uso);
+          }
+        });
+        if(document.getElementById('l7').checked){ vaziosLayer.addTo(map); }
+      })
+      .catch(err => console.warn('Camada de vazios urbanos não encontrada em ' + VAZIOS_GEOJSON_PATH, err));
+
+    document.getElementById('l7').addEventListener('change', e => {
+      if(!vaziosLayer) return;
+      if(e.target.checked){ vaziosLayer.addTo(map); } else { map.removeLayer(vaziosLayer); }
+    });
+  }
+
+  if(document.getElementById('dados').classList.contains('active')){ initMap(); }
+</script>
+
+</body>
+</html>
