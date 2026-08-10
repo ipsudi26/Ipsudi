@@ -299,16 +299,20 @@
     // ====== CONFIGURAÇÃO DA CAMADA IPSUDI ======
     // Ajuste os dois valores abaixo para bater com o seu arquivo:
     const IPSUDI_GEOJSON_PATH = 'data/ipsudi_setores.geojson'; // caminho do arquivo no repositório
-    const IPSUDI_FIELD = 'IPSUDI'; // nome exato da coluna com o valor do índice na tabela de atributos
+    const IPSUDI_FIELD = 'IPSUDI15i'; // campo com o valor do índice
+    const IPSUDI_CLASS_FIELD = 'ClassesJen'; // campo com a classe já calculada (Muito Baixo...Muito Alto)
     // =============================================
 
-    function ipsudiColor(v){
-      if(v === null || v === undefined || isNaN(v)) return '#ccc';
-      if(v <= 0.243) return getComputedStyle(document.documentElement).getPropertyValue('--muito-baixo').trim();
-      if(v <= 0.348) return getComputedStyle(document.documentElement).getPropertyValue('--baixo').trim();
-      if(v <= 0.405) return getComputedStyle(document.documentElement).getPropertyValue('--medio').trim();
-      if(v <= 0.482) return getComputedStyle(document.documentElement).getPropertyValue('--alto').trim();
-      return getComputedStyle(document.documentElement).getPropertyValue('--muito-alto').trim();
+    function ipsudiColor(classe){
+      const cssVar = {
+        'Muito Baixo': '--muito-baixo',
+        'Baixo': '--baixo',
+        'Médio': '--medio',
+        'Alto': '--alto',
+        'Muito Alto': '--muito-alto'
+      }[classe];
+      if(!cssVar) return '#ccc';
+      return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
     }
 
     let ipsudiLayer = null;
@@ -317,14 +321,20 @@
       .then(data => {
         ipsudiLayer = L.geoJSON(data, {
           style: feature => ({
-            fillColor: ipsudiColor(feature.properties[IPSUDI_FIELD]),
-            weight: 0.5,
+            fillColor: ipsudiColor(feature.properties[IPSUDI_CLASS_FIELD]),
+            weight: 0.4,
             color: '#fff',
             fillOpacity: 0.75
           }),
           onEachFeature: (feature, layer) => {
             const v = feature.properties[IPSUDI_FIELD];
-            layer.bindPopup('IPSUDI: ' + (v !== undefined ? v : 'sem dado'));
+            const classe = feature.properties[IPSUDI_CLASS_FIELD];
+            const setor = feature.properties['CD_SETOR'];
+            layer.bindPopup(
+              '<b>Setor ' + (setor || '') + '</b><br>' +
+              'IPSUDI: ' + (v !== undefined ? v.toFixed(3) : 'sem dado') + '<br>' +
+              'Classe: ' + (classe || 'sem dado')
+            );
           }
         });
         if(document.getElementById('l1').checked){ ipsudiLayer.addTo(map); }
