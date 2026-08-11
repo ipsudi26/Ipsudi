@@ -101,7 +101,7 @@
   .doc-card .action{font-size:13px;font-weight:600;color:var(--link);white-space:nowrap;}
 
   footer{border-top:1px solid var(--line);max-width:1100px;margin:20px auto 0;padding:22px 40px 40px;display:flex;gap:14px;align-items:flex-start;}
-  .cnpq-box{width:52px;height:34px;border:1px dashed var(--muted);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--muted);flex-shrink:0;}
+  .cnpq-logo{width:64px;height:auto;flex-shrink:0;object-fit:contain;}
   footer p{font-size:12.5px;color:var(--muted);margin:0;}
 </style>
 </head>
@@ -269,7 +269,8 @@
 </main>
 
 <footer>
-  <div class="cnpq-box">CNPq</div>
+  <img class="cnpq-logo" src="cnpq-logo.png" alt="Logo CNPq" onerror="this.style.display='none'; document.getElementById('cnpq-fallback').style.display='flex';">
+  <div id="cnpq-fallback" style="display:none;width:52px;height:34px;border:1px dashed var(--muted);border-radius:4px;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--muted);flex-shrink:0;">CNPq</div>
   <p>Projeto financiado pelo Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq) — Chamada MCTI Nº 10/2023, Faixa A, Grupos Emergentes. Processo 404743/2023-4.</p>
 </footer>
 
