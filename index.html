@@ -375,6 +375,32 @@
       if(!vaziosLayer) return;
       if(e.target.checked){ vaziosLayer.addTo(map); } else { map.removeLayer(vaziosLayer); }
     });
+
+    // ====== CAMADA: FAVELAS E COMUNIDADES URBANAS ======
+    const FAVELAS_GEOJSON_PATH = 'data/favelas_comunidades.geojson';
+    let favelasLayer = null;
+    fetch(FAVELAS_GEOJSON_PATH)
+      .then(r => { if(!r.ok) throw new Error('arquivo não encontrado'); return r.json(); })
+      .then(data => {
+        favelasLayer = L.geoJSON(data, {
+          style: {
+            fillColor: '#8a3ab5',
+            fillOpacity: 0.5,
+            color: '#5c2578',
+            weight: 1.2
+          },
+          onEachFeature: (feature, layer) => {
+            layer.bindPopup('Favela / comunidade urbana');
+          }
+        });
+        if(document.getElementById('l6').checked){ favelasLayer.addTo(map); }
+      })
+      .catch(err => console.warn('Camada de favelas não encontrada em ' + FAVELAS_GEOJSON_PATH, err));
+
+    document.getElementById('l6').addEventListener('change', e => {
+      if(!favelasLayer) return;
+      if(e.target.checked){ favelasLayer.addTo(map); } else { map.removeLayer(favelasLayer); }
+    });
   }
 
   if(document.getElementById('dados').classList.contains('active')){ initMap(); }
