@@ -291,8 +291,8 @@
     if(mapInitialized) return;
     mapInitialized = true;
     const map = L.map('map').setView([-18.9128, -48.2755], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap, &copy; CARTO',
       maxZoom: 19
     }).addTo(map);
     setTimeout(()=> map.invalidateSize(), 200);
