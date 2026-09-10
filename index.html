@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IPSUDI — Índice de Privação Social de Uberlândia</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -22,7 +23,7 @@
     --mono:'IBM Plex Mono',monospace;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-text-size-adjust:100%;}
   a{color:var(--link);text-decoration:none;}
   a:hover{text-decoration:underline;}
 
@@ -31,7 +32,7 @@
   .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
   .brand .logo{font-family:var(--serif);font-size:22px;font-weight:700;}
   .brand .sub{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;}
-  nav{display:flex;gap:26px;}
+  nav{display:flex;gap:26px;flex-wrap:wrap;}
   nav button{
     font-family:var(--sans);font-size:14px;font-weight:600;color:var(--muted);
     background:none;border:none;padding:4px 0;cursor:pointer;border-bottom:2px solid transparent;
@@ -103,6 +104,44 @@
   footer{border-top:1px solid var(--line);max-width:1100px;margin:20px auto 0;padding:22px 40px 40px;display:flex;gap:14px;align-items:flex-start;}
   .cnpq-logo{width:64px;height:auto;flex-shrink:0;object-fit:contain;}
   footer p{font-size:12.5px;color:var(--muted);margin:0;}
+
+  /* ============ RESPONSIVIDADE ============ */
+
+  /* Tablets e telas médias */
+  @media (max-width: 900px){
+    .topbar{padding:18px 28px;}
+    main{padding:32px 28px 26px;}
+    .hero h1{font-size:29px;}
+    .apresent-grid{grid-template-columns:1fr;gap:26px;}
+    .team-grid{grid-template-columns:repeat(2,1fr);}
+    .dados-grid{grid-template-columns:1fr;}
+    .layers-box{order:2;}
+    .map-box{order:1;height:420px;}
+  }
+
+  /* Celulares */
+  @media (max-width: 600px){
+    .topbar{padding:16px 18px;flex-direction:column;align-items:flex-start;gap:12px;}
+    nav{gap:16px;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+    nav button{white-space:nowrap;font-size:13.5px;}
+    main{padding:26px 18px 22px;}
+    .hero h1{font-size:24px;line-height:1.25;}
+    .hero p.lead{font-size:14px;}
+    .legend-pills span{font-size:10.5px;padding:6px 11px;}
+    h2.section-title{font-size:21px;}
+    .team-grid{grid-template-columns:1fr;}
+    .map-box{height:340px;}
+    .doc-card{flex-direction:column;align-items:flex-start;gap:10px;}
+    .doc-card .action{white-space:normal;}
+    footer{padding:20px 18px 34px;flex-wrap:wrap;}
+  }
+
+  /* Celulares pequenos */
+  @media (max-width: 380px){
+    .brand .logo{font-size:20px;}
+    .hero h1{font-size:22px;}
+    .map-box{height:300px;}
+  }
 </style>
 </head>
 <body>
